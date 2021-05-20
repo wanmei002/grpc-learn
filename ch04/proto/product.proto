@@ -1,0 +1,20 @@
+syntax = "proto3";
+option go_package = ".;product";
+
+package product;
+
+service Product {
+    rpc AddProduct(stream Order) returns (stream Ret);
+}
+
+message Order {
+    string name = 1;
+    string desc = 2;
+    repeated  string items = 3;
+}
+
+message Ret {
+    int32 code = 4;
+    int64 orderId= 5;
+    string msg = 6;
+}
