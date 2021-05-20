@@ -61,9 +61,6 @@ func (s *server) AddProduct(stream product.Product_AddProductServer) error {
         <-ch
         i++
         log.Println("server go process data", i)
-        log.Println("server begin sleep")
-        time.Sleep(1e9)
-        log.Println("server sleep over")
         // 处理接收的数据的数据
         go processData(od)
     }
@@ -108,6 +105,9 @@ func processData(od *product.Order) {
     retLock.Lock()
     RetOrderInfo = append(RetOrderInfo, ret)
     retLock.Unlock()
+    log.Println("start sleep")
+    time.Sleep(1e9)
+    log.Println("sleep end")
     ch <- struct{}{}
 }
 
