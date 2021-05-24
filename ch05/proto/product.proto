@@ -1,0 +1,38 @@
+syntax = "proto3";
+option go_package = "server/product;product";
+
+package pb;
+
+service Product {
+    // 一元
+    rpc AddProduct (Order) returns (RespRes);
+    // 服务端流数据的接收
+    rpc CommentProduct(ProductId) returns (stream CommentInfo);
+    // 客户端流
+
+}
+
+message ProductId {
+    string Id = 8;
+}
+
+message CommentInfo {
+    string userName = 9;
+    string userComment = 10;
+}
+
+message OrderList {
+    repeated Order items = 7;
+}
+
+message Order {
+    string Name = 1;
+    repeated string Items = 2;
+    string Desc = 3;
+}
+
+message RespRes {
+    int32 Code = 4;
+    string msg = 5;
+    string data = 6;
+}
