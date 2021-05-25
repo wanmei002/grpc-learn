@@ -3,6 +3,7 @@ package main
 import (
     "context"
     "fmt"
+    "github.com/wanmei002/grpc-learn/ch05/server/interceptor"
     pb "github.com/wanmei002/grpc-learn/ch05/server/product"
     "google.golang.org/grpc"
     "log"
@@ -71,6 +72,8 @@ func (s *server) CommentProduct(orderId *pb.ProductId, stream pb.Product_Comment
             return nil
         }
     }
+    log.Println("commentProduct over")
+    return nil
 }
 
 // 一元拦截器
@@ -100,7 +103,7 @@ func main(){
         log.Println("listen failed; err:", err)
         return
     }
-    g := grpc.NewServer(grpc.UnaryInterceptor(orderUnaryServerInterceptor))
+    g := grpc.NewServer(grpc.UnaryInterceptor(orderUnaryServerInterceptor), grpc.StreamInterceptor(interceptor.ProductServerStreamInterceptor))
     pb.RegisterProductServer(g, &server{})
     log.Println("server start, port :", port)
     if err = g.Serve(ls); err != nil {
