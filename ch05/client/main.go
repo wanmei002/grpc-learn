@@ -3,13 +3,18 @@ package main
 import (
     "context"
     "fmt"
+    "github.com/wanmei002/grpc-learn/ch05/client/interceptor"
     pb "github.com/wanmei002/grpc-learn/ch05/server/product"
     "google.golang.org/grpc"
     "log"
 )
 
 func main(){
-    d, err := grpc.Dial(":8093", grpc.WithInsecure())
+    // 在这里注册拦截器
+    d, err := grpc.Dial(":8093", grpc.WithInsecure(),
+        grpc.WithUnaryInterceptor(interceptor.ClientUnaryInterceptor),
+        grpc.WithStreamInterceptor(interceptor.ClientStreamInterceptor))
+    
     if err != nil {
         log.Println("grpc dial failed; err:", err)
         return
@@ -42,6 +47,8 @@ func main(){
                 break
             }
             log.Printf("recv data :[%+v]\n", commentInfo)
+            log.Println("once return")
+            return
         }
         
     }

@@ -55,6 +55,10 @@ func (s *server) AddProduct(ctx context.Context, od *pb.Order) (*pb.RespRes, err
 
 // 根据 product id 查询用户的对它的评论，如果这个product 有评论了，就返回数据
 func (s *server) CommentProduct(orderId *pb.ProductId, stream pb.Product_CommentProductServer) error {
+    defer func(){
+        log.Println("comment product is over")
+    }()
+    
     sendIndex := 0
     for {
         if commentList, ok := ProductComment[orderId.Id]; ok {

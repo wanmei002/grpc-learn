@@ -1,0 +1,5 @@
+syntax = "proto3";
+option go_packge = "server/product;product";
+
+package product;
+
