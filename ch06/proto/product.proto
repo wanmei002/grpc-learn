@@ -1,5 +1,20 @@
 syntax = "proto3";
-option go_packge = "server/product;product";
+option go_package = "server/product;product";
 
 package product;
 
+service OrderServer {
+    rpc AddOrder(Order) returns (Res);
+}
+
+message Order {
+    string name = 1;
+    repeated string items = 2;
+    string desc = 3;
+}
+
+message Res {
+    int32 code = 4;
+    string msg = 5;
+
+}
