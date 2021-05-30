@@ -1,0 +1,18 @@
+syntax = "proto3";
+option go_package = "server/chat;chat";
+
+package chat;
+
+// 简单模拟两个人对话
+service ChatSvr {
+    rpc SendMessage(stream MsgInfo) returns (stream MsgInfo);
+}
+
+message MsgInfo {
+    uint64 ChatRoomID = 1;
+    uint64 UserID = 2;
+    string UserName = 3;
+    string UserHeadImg = 4;
+    string Msg = 5;
+    string Ext = 6;
+}
