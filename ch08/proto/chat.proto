@@ -1,0 +1,14 @@
+syntax = "proto3";
+option go_package="server/chat;chat";
+
+package chat;
+
+service ChatRoom {
+    rpc SendMsg(stream msg) returns (stream msg);
+}
+
+message msg {
+    uint64 userID = 1;
+    string userName = 2;
+    string msg = 3;
+}
