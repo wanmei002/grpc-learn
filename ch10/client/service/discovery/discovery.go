@@ -6,13 +6,23 @@ import (
 	"fmt"
 	"log"
 	"sync"
+	"time"
 
 	"go.etcd.io/etcd/clientv3"
-	"go.etcd.io/etcd/mvcc/mvccpb"
 	"google.golang.org/grpc/resolver"
 )
 
-var scheme = "order.Order"
+var scheme = "order"
+var svr = "Order"
+
+
+func GetSheme() string {
+	return scheme
+}
+
+func GetSvr() string {
+	return svr
+}
 
 // 1. 我们先写一个结构体，继承 Bulider Resolver 这两个接口
 // 2. Bulid 这个方法是gRPC框架调用的入口方法，在这个入口方法里我们实现如下逻辑:
@@ -25,16 +35,41 @@ type serverDiscovery struct {
 	serviceIpList sync.Map            // 用来存储获得的ip列表，因为监听服务是新的协程在运行，可能会存在对map的同时读写，引起资源冲突
 }
 
+var etcdPort = ":2379"
+
+func NewServerDiscovery() resolver.Builder {
+	etcdCli, err := clientv3.New(
+		clientv3.Config{
+			Endpoints:   []string{etcdPort},
+			DialTimeout: 5 * time.Second,
+		},
+	)
+	if err != nil {
+		log.Println("client get etcd cli failed; err :", err)
+		panic(err)
+	}
+
+	return &serverDiscovery{cli: etcdCli}
+}
+
 // Bulid 先实现这个接口
-func (s *serverDiscovery) Bulid(target resolver.Target, cc resolver.ClientConn,
-	opts resolver.BuildOption) (resolver.Resolver, error) {
+func (s *serverDiscovery) Build(target resolver.Target, cc resolver.ClientConn,
+	opts resolver.BuildOptions) (resolver.Resolver, error) {
+		defer func(){
+			if err := recover(); err != nil {
+				log.Println("build err:",err)
+			}
+		}()
+	s.conn = cc
 	// 获取在 etcd 保存的前缀
-	prefix := fmt.Sprintf("/%s/%s/", target.Scheme, target.Endpoint)
+	prefix := fmt.Sprintf("/%s.%s/", target.Scheme, target.Endpoint)
 	res, err := s.cli.Get(context.Background(), prefix, clientv3.WithPrefix())
 	if err != nil {
 		log.Println("Bulid etcd get addr failed; err:", err)
 		return nil, err
 	}
+	log.Printf("etcd res:%+v\n", res)
+
 	for _, kv := range res.Kvs {
 		s.store(kv.Key, kv.Value)
 	}
@@ -53,10 +88,10 @@ func (s *serverDiscovery) watch(prefix string) {
 	for val := range res {
 		for _, event := range val.Events {
 			switch event.Type {
-			case mvccpb.PUT:
+			case 0:
 				s.store(event.Kv.Key, event.Kv.Value)
 				s.updateState()
-			case mvccpb.DELETE:
+			case 1:
 				s.del(event.Kv.Key)
 			}
 		}
@@ -73,7 +108,7 @@ func (s *serverDiscovery) ResolveNow(resolver.ResolveNowOption) {
 }
 
 func (s *serverDiscovery) Close() {
-	s.cli.Close()
+	log.Print("i am close\n")
 }
 
 func (s *serverDiscovery) store(k, v []byte) {
@@ -99,4 +134,8 @@ func (s *serverDiscovery) updateState() {
 	})
 
 	s.conn.UpdateState(addrList)
+}
+
+func init() {
+	resolver.Register(NewServerDiscovery())
 }

@@ -32,6 +32,6 @@ require (
 
 replace google.golang.org/grpc v1.38.0 => google.golang.org/grpc v1.26.0
 
-replace github.com/coreos/go-systemd => /mnt/f/godjc/src/github.com/coreos/go-systemd
+replace github.com/coreos/go-systemd => G:/gozzh/src/github.com/coreos/go-systemd
 
 replace github.com/coreos/bbolt v1.3.6 => go.etcd.io/bbolt v1.3.6

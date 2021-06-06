@@ -19,6 +19,7 @@ type server struct {
 var orderDB sync.Map
 
 func (s *server) AddOrder(ctx context.Context, orderInfo *order.OrderInfo) (*order.Res, error) {
+	log.Println("ip:", s.ip)
 	_, ok := orderDB.Load(orderInfo.Name)
 	if ok {
 		return &order.Res{Msg: "订单已存在"}, nil
@@ -46,7 +47,7 @@ func main() {
 	defer ls.Close()
 	gSvr := grpc.NewServer()
 
-	order.RegisterOrderServer(gSvr, &server{})
+	order.RegisterOrderServer(gSvr, &server{ip:input[1]})
 
 	// etcd 推送监听的端口
 	err = etcd.Put(serviceName+input[1], input[1])

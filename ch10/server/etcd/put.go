@@ -23,6 +23,8 @@ func Put(key, val string) error {
 		return err
 	}
 
+	defer etcdCli.Close()
+	log.Println("etcd put key :", key)
 	res, err := etcdCli.Put(context.Background(), key, val)
 	if err != nil {
 		log.Printf("etcd put failed; err:[%v];key:[%v];val:[%v];\n", err, key, val)
