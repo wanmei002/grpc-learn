@@ -15,7 +15,6 @@ import (
 var scheme = "order"
 var svr = "Order"
 
-
 func GetSheme() string {
 	return scheme
 }
@@ -55,11 +54,11 @@ func NewServerDiscovery() resolver.Builder {
 // Bulid 先实现这个接口
 func (s *serverDiscovery) Build(target resolver.Target, cc resolver.ClientConn,
 	opts resolver.BuildOptions) (resolver.Resolver, error) {
-		defer func(){
-			if err := recover(); err != nil {
-				log.Println("build err:",err)
-			}
-		}()
+	defer func() {
+		if err := recover(); err != nil {
+			log.Println("build err:", err)
+		}
+	}()
 	s.conn = cc
 	// 获取在 etcd 保存的前缀
 	prefix := fmt.Sprintf("/%s.%s/", target.Scheme, target.Endpoint)
@@ -77,6 +76,7 @@ func (s *serverDiscovery) Build(target resolver.Target, cc resolver.ClientConn,
 	s.updateState()
 
 	// 启动 etcd 观察者模式
+	go s.watch(prefix)
 
 	return s, nil
 
@@ -90,9 +90,12 @@ func (s *serverDiscovery) watch(prefix string) {
 			switch event.Type {
 			case 0:
 				s.store(event.Kv.Key, event.Kv.Value)
+				log.Println("put:", string(event.Kv.Key))
 				s.updateState()
 			case 1:
+				log.Println("del:", string(event.Kv.Key))
 				s.del(event.Kv.Key)
+				s.updateState()
 			}
 		}
 	}

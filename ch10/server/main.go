@@ -47,14 +47,17 @@ func main() {
 	defer ls.Close()
 	gSvr := grpc.NewServer()
 
-	order.RegisterOrderServer(gSvr, &server{ip:input[1]})
+	order.RegisterOrderServer(gSvr, &server{ip: input[1]})
 
 	// etcd 推送监听的端口
-	err = etcd.Put(serviceName+input[1], input[1])
+	etcdRes, err := etcd.RegisterServer(serviceName+input[1], input[1], 5)
 	if err != nil {
 		log.Println("etcd put failed; err:", err)
 		return
 	}
+
+	defer etcdRes.Close()
+
 	log.Println("server start; port:", input[1])
 
 	if err = gSvr.Serve(ls); err != nil {
