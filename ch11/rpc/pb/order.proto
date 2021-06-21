@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option go_package="rpc/pb;pb";
+
+import "rpc/pb/comm.proto";
+
+package pb;
+
+service Order {
+    rpc AddOrder(OrderInfo) returns (Res);
+}
+
+message OrderInfo {
+    string name = 1;
+    repeated string items = 2;
+    string desc = 3;
+}

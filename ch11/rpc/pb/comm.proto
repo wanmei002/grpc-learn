@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+option go_package="rpc/pb;pb";
+
+package pb;
+
+message Res {
+    int32 code = 1;
+    string msg = 2;
+}
